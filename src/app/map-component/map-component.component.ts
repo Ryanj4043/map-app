@@ -46,6 +46,8 @@ export class MapComponentComponent implements OnInit {
     })
   });
 
+  public placePin: boolean;
+
   constructor(private sizeCheck: SizeCheckService) { }
 
   ngOnInit(): void {
@@ -84,12 +86,13 @@ export class MapComponentComponent implements OnInit {
   }
 
   addMarker(lon: any, lat: any): void {
-    var iconFeature = new Feature({
-      geometry: new Point(transform([lon, lat], 'EPSG:4326',
-        'EPSG:3857')),
-    });
-  
-    this.markerLayer.addFeature(iconFeature);
+    if(this.placePin){
+      var iconFeature = new Feature({
+        geometry: new Point(transform([lon, lat], 'EPSG:4326', 'EPSG:3857')),
+      });
+    
+      this.markerLayer.addFeature(iconFeature);
+    }
   }
 
   createLayers(): void{
@@ -108,7 +111,6 @@ export class MapComponentComponent implements OnInit {
 
     let vLayer = new VectorLayer({source: this.markerLayer, style: this.markerStyle});
     this.layers.push(vLayer); 
-  
   }
 
 }

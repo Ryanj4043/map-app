@@ -4,5 +4,7 @@
     <span>Layer 3: <input [(ngModel)]="url[2]" type="url"><br></span>
 </div>
 <button (click)="onUpload()">Upload!</button>
+<input type="checkbox" name="checkboxLabel" [(ngModel)]="placePin">
+<label for="checkboxLabel"> Toogle Pin</label>
 
 <div id="map" class="map"></div>
