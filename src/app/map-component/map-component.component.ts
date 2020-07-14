@@ -89,6 +89,9 @@ export class MapComponentComponent implements OnInit {
     if(this.placePin){
       var iconFeature = new Feature({
         geometry: new Point(transform([lon, lat], 'EPSG:4326', 'EPSG:3857')),
+        name: "ancient Hide out",
+        description: "Theres alot of elfs here",
+        owners: "Ancients"
       });
     
       this.markerLayer.addFeature(iconFeature);
