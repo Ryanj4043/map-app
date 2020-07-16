@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { PinStyleService} from "./pin-style.service"
 
 @Component({
   selector: 'app-pin-style',
@@ -13,9 +14,16 @@ export class PinStyleComponent implements OnInit {
 
   public locDes: string;
 
-  constructor() { }
+  public locOwner: string;
+
+  constructor(private pinStyleSerive: PinStyleService) { }
 
   ngOnInit(): void {
+  }
+
+  createPin(): void{
+    this.pinStyleSerive.createPin(this.locName, this.locDes, this.locOwner);
+    this.pinStyleSerive.createStyle(this.pinUrl);
   }
 
 }

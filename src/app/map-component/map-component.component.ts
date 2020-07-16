@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, Input } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, Input, ViewChild, ElementRef } from '@angular/core';
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -16,6 +16,11 @@ import Point from 'ol/geom/Point';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
 import {transform, toLonLat} from "ol/proj"
+import { PinStyleService } from '../pin-style/pin-style.service';
+import Overlay from 'ol/Overlay';
+import OverlayPositioning from 'ol/OverlayPositioning';
+
+declare var $: any;
 
 @Component({
   selector: 'app-map-component',
@@ -40,6 +45,8 @@ export class MapComponentComponent implements OnInit {
 
   public markerLayer: VectorSource;
 
+  public oneOff: boolean = false;
+
   public markerStyle = new Style({
     image: new Icon({
       src: 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/32/pin-icon.png'
@@ -48,9 +55,21 @@ export class MapComponentComponent implements OnInit {
 
   public placePin: boolean;
 
-  constructor(private sizeCheck: SizeCheckService) { }
+  @ViewChild('popup') element: any;
 
-  ngOnInit(): void {
+  public popup: any;
+
+  constructor(private sizeCheck: SizeCheckService, private pinStyleSerive: PinStyleService) { }
+
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void{
+    this.popup = new Overlay({
+      element: this.element.nativeElement,
+      positioning: OverlayPositioning.BOTTOM_CENTER,
+      stopEvent: false,
+      offset: [0, 0]
+    });
   }
 
   async onUpload(){
@@ -64,9 +83,7 @@ export class MapComponentComponent implements OnInit {
       this.createLayers();
 
       this.map = new Map({
-        interactions: defaultInteractions().extend([
-          new DragRotateAndZoom()
-        ]),
+        interactions: defaultInteractions().extend([ new DragRotateAndZoom() ]),
         layers: this.layers,
         target: 'map',
         view: new View({
@@ -78,24 +95,50 @@ export class MapComponentComponent implements OnInit {
         })
       });
 
+      this.map.addOverlay(this.popup);
+
       this.map.on("singleclick", (event)=>{
         var lonLat = toLonLat(event.coordinate);
-        this.addMarker(lonLat[0], lonLat[1]);
-      })
+        if(this.placePin){
+          this.addMarker(lonLat[0], lonLat[1]);
+        } else {
+          var feature = this.map.forEachFeatureAtPixel(event.pixel, feature => {return feature});
+          if (feature) {
+            let p = feature.getGeometry() as Point;
+            let c = p.getCoordinates();
+            this.popup.setPosition(c);
+            $(this.element.nativeElement).popover({
+              placement: 'top',
+              html: true,
+              content: feature.get('name')
+            });
+            $(this.element.nativeElement).popover('show');
+          } else {
+            $(this.element.nativeElement).popover('destroy');
+          }
+        }
+      });
     }
   }
 
   addMarker(lon: any, lat: any): void {
-    if(this.placePin){
-      var iconFeature = new Feature({
-        geometry: new Point(transform([lon, lat], 'EPSG:4326', 'EPSG:3857')),
-        name: "ancient Hide out",
-        description: "Theres alot of elfs here",
-        owners: "Ancients"
-      });
-    
-      this.markerLayer.addFeature(iconFeature);
-    }
+    let iconFeature= undefined;
+
+      if(this.pinStyleSerive.currentPin){
+        this.pinStyleSerive.currentPin.subscribe((currentPin)=>{
+          iconFeature = currentPin;
+          iconFeature.setGeometry(new Point(transform([lon, lat], 'EPSG:4326', 'EPSG:3857')));
+          this.markerLayer.addFeature(iconFeature);
+        });
+        if(!this.oneOff){
+          this.pinStyleSerive.currentPin = undefined;
+        }
+      } else {
+        iconFeature = new Feature({
+          geometry: new Point(transform([lon, lat], 'EPSG:4326', 'EPSG:3857'))
+        });
+        this.markerLayer.addFeature(iconFeature);
+      }
   }
 
   createLayers(): void{
@@ -115,5 +158,4 @@ export class MapComponentComponent implements OnInit {
     let vLayer = new VectorLayer({source: this.markerLayer, style: this.markerStyle});
     this.layers.push(vLayer); 
   }
-
 }

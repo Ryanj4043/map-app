@@ -2,3 +2,10 @@
     width: 600px;
     height:600px;
   }
+
+  .popup {
+    border-radius: 5px;
+    border: 1px solid grey;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 2px;
+}

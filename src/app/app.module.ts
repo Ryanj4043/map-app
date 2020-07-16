@@ -6,20 +6,19 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MapComponentComponent } from './map-component/map-component.component';
-import { FileUploadComponent } from './file-upload/file-upload.component';
 import { PinStyleComponent } from './pin-style/pin-style.component';
+
 
 @NgModule({
   declarations: [
     AppComponent,
     MapComponentComponent,
-    FileUploadComponent,
     PinStyleComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
