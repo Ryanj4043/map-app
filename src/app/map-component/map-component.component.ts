@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, ViewChild, ElementRef,  Renderer2 } from '@angular/core';
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -55,20 +55,24 @@ export class MapComponentComponent implements OnInit {
 
   public placePin: boolean;
 
-  @ViewChild('popup') element: any;
+  @ViewChild('popup') element: ElementRef;
 
-  public popup: any;
+  public popup: Overlay;
 
-  constructor(private sizeCheck: SizeCheckService, private pinStyleSerive: PinStyleService) { }
+  constructor(private sizeCheck: SizeCheckService, private pinStyleSerive: PinStyleService,  private _renderer: Renderer2) { }
 
   ngOnInit(): void {}
 
   ngAfterViewInit(): void{
+    $(function () {
+      $('[data-toggle="popover"]').popover()
+  })
+
     this.popup = new Overlay({
       element: this.element.nativeElement,
       positioning: OverlayPositioning.BOTTOM_CENTER,
       stopEvent: false,
-      offset: [0, 0]
+      offset: [0, -50]
     });
   }
 
@@ -108,6 +112,7 @@ export class MapComponentComponent implements OnInit {
             let c = p.getCoordinates();
             this.popup.setPosition(c);
             $(this.element.nativeElement).popover({
+              toggle: "popover",
               placement: 'top',
               html: true,
               content: feature.get('name')
